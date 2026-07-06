@@ -23,7 +23,11 @@
     "db:deploy-migration:staging": "dotenv -e ../../.env.staging -- prisma migrate deploy && prisma generate",
     "db:deploy-migration:production": "dotenv -e ../../.env.production -- prisma migrate deploy && prisma generate",
     "db:reset": "prisma migrate reset",
-    "db:reset:staging": "dotenv -e ../../.env.staging -- prisma migrate reset"
+    "db:reset:staging": "dotenv -e ../../.env.staging -- prisma migrate reset",
+    "db:deploy-migration:demo": "dotenv -e ../../.env.demo -- prisma migrate deploy --config prisma.config.postgres.ts && prisma generate --config prisma.config.postgres.ts",
+    "db:deploy-migration:karofi": "dotenv -e ../../.env.karofi -- prisma migrate deploy --config prisma.config.postgres.ts && prisma generate --config prisma.config.postgres.ts",
+    "db:deploy-migration:cpanel": "dotenv -e ../../.env.cpanel -- prisma migrate deploy && prisma generate",
+    "db:migrate:mysql-baseline": "dotenv -e ../../.env.cpanel -- prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script > prisma/migrations-mysql/0001_baseline/migration.sql"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3"

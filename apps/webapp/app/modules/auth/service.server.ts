@@ -4,19 +4,27 @@ import {
   isAuthRetryableFetchError,
 } from "@supabase/supabase-js";
 import type { AuthSession } from "@server/session";
+import { isLocalAuth } from "~/config/platform.config";
 import { config } from "~/config/shelf.config";
 import { db } from "~/database/db.server";
-import { getSupabaseAdmin } from "~/integrations/supabase/client";
+import {
+  getSupabaseAdmin,
+  supabaseClient,
+} from "~/integrations/supabase/client";
 import { SERVER_URL } from "~/utils/env";
 
 import type { ErrorLabel } from "~/utils/error";
 import { isLikeShelfError, ShelfError } from "~/utils/error";
 import { Logger } from "~/utils/logger";
+import * as localAuth from "./local-auth.server";
 import { mapAuthSession } from "./mappers.server";
 
 const label: ErrorLabel = "Auth";
 
 export async function createEmailAuthAccount(email: string, password: string) {
+  if (isLocalAuth) {
+    return localAuth.createEmailAuthAccount(email, password);
+  }
   try {
     const { data, error } = await getSupabaseAdmin().auth.admin.createUser({
       email,
@@ -56,6 +64,9 @@ export async function confirmExistingAuthAccount(
   email: string,
   password: string
 ) {
+  if (isLocalAuth) {
+    return localAuth.confirmExistingAuthAccount(email, password);
+  }
   try {
     const result = await db.$queryRaw<{ id: string }[]>`
       SELECT id FROM auth.users
@@ -91,6 +102,9 @@ export async function confirmExistingAuthAccount(
 }
 
 export async function signUpWithEmailPass(email: string, password: string) {
+  if (isLocalAuth) {
+    return localAuth.signUpWithEmailPass(email, password);
+  }
   try {
     const { data, error } = await getSupabaseAdmin().auth.signUp({
       email: email,
@@ -145,6 +159,9 @@ export async function signUpWithEmailPass(email: string, password: string) {
 }
 
 export async function resendVerificationEmail(email: string) {
+  if (isLocalAuth) {
+    return localAuth.resendVerificationEmail(email);
+  }
   try {
     const { error } = await getSupabaseAdmin().auth.resend({
       type: "signup",
@@ -169,8 +186,11 @@ export async function resendVerificationEmail(email: string) {
 }
 
 export async function signInWithEmail(email: string, password: string) {
+  if (isLocalAuth) {
+    return localAuth.signInWithEmail(email, password);
+  }
   try {
-    const { data, error } = await getSupabaseAdmin().auth.signInWithPassword({
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
       email,
       password,
     });
@@ -226,6 +246,9 @@ export async function signInWithSSO(
    */
   { platform = "web" }: { platform?: "web" | "mobile" } = {}
 ) {
+  if (isLocalAuth) {
+    return localAuth.signInWithSSO(domain);
+  }
   try {
     const redirectTo = `${SERVER_URL}/oauth/callback${
       platform === "mobile" ? "/mobile" : ""
@@ -289,6 +312,9 @@ async function validateNonSSOUser(email: string) {
 }
 
 export async function sendOTP(email: string) {
+  if (isLocalAuth) {
+    return localAuth.sendOTP(email);
+  }
   try {
     await validateNonSSOUser(email);
 
@@ -352,6 +378,9 @@ export async function sendOTP(email: string) {
 }
 
 export async function sendResetPasswordLink(email: string) {
+  if (isLocalAuth) {
+    return localAuth.sendResetPasswordLink(email);
+  }
   try {
     await validateNonSSOUser(email);
 
@@ -372,6 +401,9 @@ export async function updateAccountPassword(
   password: string,
   accessToken?: string | undefined
 ) {
+  if (isLocalAuth) {
+    return localAuth.updateAccountPassword(id, password, accessToken);
+  }
   try {
     const user = await db.user.findFirst({
       where: { id },
@@ -410,6 +442,9 @@ export async function updateAccountPassword(
 }
 
 export async function deleteAuthAccount(userId: string) {
+  if (isLocalAuth) {
+    return localAuth.deleteAuthAccount(userId);
+  }
   try {
     const { error } = await getSupabaseAdmin().auth.admin.deleteUser(userId);
 
@@ -430,6 +465,9 @@ export async function deleteAuthAccount(userId: string) {
 }
 
 export async function getAuthUserById(userId: string) {
+  if (isLocalAuth) {
+    return localAuth.getAuthUserById(userId);
+  }
   try {
     const { data, error } =
       await getSupabaseAdmin().auth.admin.getUserById(userId);
@@ -453,8 +491,11 @@ export async function getAuthUserById(userId: string) {
 }
 
 export async function getAuthResponseByAccessToken(accessToken: string) {
+  if (isLocalAuth) {
+    return localAuth.getAuthResponseByAccessToken(accessToken);
+  }
   try {
-    return await getSupabaseAdmin().auth.getUser(accessToken);
+    return await supabaseClient.auth.getUser(accessToken);
   } catch (cause) {
     throw new ShelfError({
       cause,
@@ -466,6 +507,9 @@ export async function getAuthResponseByAccessToken(accessToken: string) {
 }
 
 export async function validateSession(token: string) {
+  if (isLocalAuth) {
+    return localAuth.validateSession(token);
+  }
   try {
     // const t0 = performance.now();
     const result = await db.$queryRaw<{ id: string; revoked: boolean }[]>`
@@ -507,6 +551,9 @@ export async function validateSession(token: string) {
 export async function refreshAccessToken(
   refreshToken?: string
 ): Promise<AuthSession> {
+  if (isLocalAuth) {
+    return localAuth.refreshAccessToken(refreshToken);
+  }
   try {
     if (!refreshToken) {
       throw new ShelfError({
@@ -516,7 +563,7 @@ export async function refreshAccessToken(
       });
     }
 
-    const { data, error } = await getSupabaseAdmin().auth.refreshSession({
+    const { data, error } = await supabaseClient.auth.refreshSession({
       refresh_token: refreshToken,
     });
 
@@ -550,6 +597,9 @@ export async function refreshAccessToken(
 }
 
 export async function verifyAuthSession(authSession: AuthSession) {
+  if (isLocalAuth) {
+    return localAuth.verifyAuthSession(authSession);
+  }
   try {
     const authAccount = await getAuthResponseByAccessToken(
       authSession.accessToken
@@ -567,6 +617,9 @@ export async function verifyAuthSession(authSession: AuthSession) {
 }
 
 export async function verifyOtpAndSignin(email: string, otp: string) {
+  if (isLocalAuth) {
+    return localAuth.verifyOtpAndSignin(email, otp);
+  }
   try {
     const { data, error } = await getSupabaseAdmin().auth.verifyOtp({
       email,

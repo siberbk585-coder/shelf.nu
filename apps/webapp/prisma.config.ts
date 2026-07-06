@@ -2,7 +2,7 @@ import path from "node:path";
 import dotenv from "dotenv";
 import { defineConfig } from "prisma/config";
 
-dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, "../../.env"), override: false });
 
 export default defineConfig({
   schema: "../../packages/database/prisma/schema.prisma",

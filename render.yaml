@@ -1,0 +1,69 @@
+# Render Blueprint — Karofi demo on Supabase Singapore (free tier).
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Deploy: Render Dashboard → New → Blueprint → connect this repo.
+# Set secret env vars in Dashboard after first deploy (DATABASE_URL, SUPABASE_*, SESSION_SECRET).
+
+services:
+  - type: web
+    name: karofi-demo-sg
+    runtime: node
+    region: singapore
+    plan: free
+    branch: dqa-fork
+    buildCommand: >-
+      corepack enable &&
+      corepack prepare pnpm@9.15.4 --activate &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @shelf/database exec prisma generate --config prisma.config.postgres.ts &&
+      pnpm --filter @shelf/database exec prisma migrate deploy --config prisma.config.postgres.ts &&
+      pnpm --filter @shelf/webapp run build:postgres
+    startCommand: cd apps/webapp && NODE_ENV=production PORT=8080 node ./build/server/index.js
+    healthCheckPath: /healthcheck
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: DATABASE_PROVIDER
+        value: postgresql
+      - key: PLATFORM_PROFILE
+        value: karofi
+      - key: AUTH_DRIVER
+        value: supabase
+      - key: STORAGE_DRIVER
+        value: supabase
+      - key: JOB_QUEUE_DRIVER
+        value: pgboss
+      - key: APP_NAME
+        value: Karofi
+      - key: DEFAULT_LOCALE
+        value: vi
+      - key: DEMO_VI
+        value: "true"
+      - key: ENABLE_PREMIUM_FEATURES
+        value: "false"
+      - key: DISABLE_SIGNUP
+        value: "true"
+      - key: DISABLE_SSO
+        value: "false"
+      - key: SEND_ONBOARDING_EMAIL
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_PUBLIC
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: SERVER_URL
+        sync: false
+      - key: INVITE_TOKEN_SECRET
+        generateValue: true
+      - key: FINGERPRINT
+        generateValue: true

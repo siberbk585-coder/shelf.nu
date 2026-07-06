@@ -1,0 +1,16 @@
+# Render env vars for karofi-demo-sg (paste in Render Dashboard → Environment)
+# Copy values from .env.karofi after: bash scripts/generate-karofi-sg-env.sh
+#
+# Required secrets (sync: false in render.yaml):
+# DATABASE_URL=
+# DIRECT_URL=
+# SUPABASE_URL=https://frgqshzrhpatolttqqdx.supabase.co
+# SUPABASE_ANON_PUBLIC=
+# SUPABASE_SERVICE_ROLE=   # sb_secret_... from Supabase Dashboard → API
+# SERVER_URL=https://karofi-demo-sg.onrender.com
+#
+# Auto-generated on Render: SESSION_SECRET, FINGERPRINT, INVITE_TOKEN_SECRET
+#
+# Supabase Auth → URL configuration:
+#   Site URL: https://karofi-demo-sg.onrender.com
+#   Redirect URLs: https://karofi-demo-sg.onrender.com/**, http://localhost:3000/**
