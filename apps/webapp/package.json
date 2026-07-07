@@ -29,7 +29,7 @@
     "seed:reporting-demo": "dotenv -e ../../.env -- tsx scripts/seed-reporting-demo.ts",
     "seed:reporting-demo:staging": "dotenv -e ../../.env.staging -- tsx scripts/seed-reporting-demo.ts",
     "seed:demo-admin:demo": "dotenv -e ../../.env.demo -- tsx scripts/seed-demo-admin.ts",
-    "seed:karofi-admin": "dotenv -e ../../.env.karofi -- tsx scripts/seed-demo-admin.ts",
+    "seed:karofi-admin": "dotenv -e ../../.env.karofi -- pnpm --filter @shelf/database exec prisma generate --config prisma.config.postgres.ts && dotenv -e ../../.env.karofi -- tsx scripts/seed-demo-admin.ts",
     "seed:karofi-admin:cpanel": "dotenv -e ../../.env.cpanel -- tsx scripts/seed-karofi-admin.ts",
     "seed:dqa-assets:demo": "dotenv -e ../../.env.demo -- tsx scripts/seed-dqa-assets-demo.ts",
     "backfill:dqa-profiles:demo": "dotenv -e ../../.env.demo -- tsx scripts/backfill-dqa-profiles.ts",
